@@ -1,531 +1,607 @@
-(function () {
-  'use strict';
 
-  // إزالة أي Service Worker قديم يسبب ثبات النسخة القديمة
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-      registrations.forEach(function (reg) {
-        reg.unregister();
-      });
+// ==========================================
+// ECARTIX 2.0
+// FINANCIAL MANAGEMENT ENGINE
+// ==========================================
+
+"use strict";
+
+// ---------- STORAGE ----------
+
+const STORAGE = {
+  transactions: "ecartix_transactions_v2",
+  budget: "ecartix_budget_v2",
+  currency: "ecartix_currency_v2",
+  theme: "ecartix_theme_v2"
+};
+
+function loadData(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    console.error("Storage error:", error);
+    return fallback;
+  }
+}
+
+let transactions = loadData(STORAGE.transactions, []);
+let budget = loadData(STORAGE.budget, 0);
+let currency = loadData(STORAGE.currency, "DZD");
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE.transactions, JSON.stringify(transactions));
+    localStorage.setItem(STORAGE.budget, JSON.stringify(budget));
+    localStorage.setItem(STORAGE.currency, currency);
+  } catch (error) {
+    alert("Unable to save data. Your browser storage may be full.");
+    console.error(error);
+  }
+}
+
+// ---------- HELPERS ----------
+
+const $ = id => document.getElementById(id);
+
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(value) || 0);
+}
+
+function money(value) {
+  return `${formatMoney(value)} ${currency}`;
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function createReference() {
+  return "ECX-" + Date.now().toString(36).toUpperCase();
+}
+
+function getExpenses() {
+  return transactions
+    .filter(t => t.type === "expense")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+}
+
+function getIncome() {
+  return transactions
+    .filter(t => t.type === "income")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+}
+
+function getVariance() {
+  return Number(budget) - getExpenses();
+}
+
+function getUtilization() {
+  return Number(budget) > 0
+    ? (getExpenses() / Number(budget)) * 100
+    : 0;
+}
+
+// ---------- NAVIGATION ----------
+
+function showSection(sectionId) {
+  document.querySelectorAll(".dashboard-section").forEach(section => {
+    section.classList.toggle("hidden", section.id !== sectionId);
+  });
+
+  document.querySelectorAll(".sidebar nav a").forEach(link => {
+    link.classList.toggle(
+      "active",
+      link.getAttribute("href") === "#" + sectionId
+    );
+  });
+
+  const titles = {
+    dashboard: "Financial Dashboard",
+    ledger: "Financial Ledger",
+    budget: "Budget Management",
+    variance: "Variance Analysis",
+    simulation: "Simulation Lab",
+    reports: "Reports Center",
+    settings: "Settings"
+  };
+
+  const title = document.querySelector(".topbar h1");
+  if (title) title.textContent = titles[sectionId] || "ECARTIX";
+
+  history.replaceState(null, "", "#" + sectionId);
+}
+
+document.querySelectorAll(".sidebar nav a").forEach(link => {
+  link.addEventListener("click", event => {
+    event.preventDefault();
+    const section = link.getAttribute("href").slice(1);
+    showSection(section);
+  });
+});
+
+document.querySelectorAll("[onclick]").forEach(() => {
+  // Inline actions are handled by their functions below.
+});
+
+// ---------- TRANSACTIONS ----------
+
+let editingId = null;
+
+function renderTransactions() {
+  const table = $("transactionList");
+  const recent = $("recentTransactions");
+
+  if (!table || !recent) return;
+
+  const search = $("searchInput")?.value.toLowerCase() || "";
+
+  const filtered = transactions.filter(t =>
+    [t.description, t.category, t.reference, t.type]
+      .join(" ")
+      .toLowerCase()
+      .includes(search)
+  );
+
+  if (filtered.length === 0) {
+    table.innerHTML = `
+      <tr><td colspan="6">No transactions found.</td></tr>
+    `;
+  } else {
+    table.innerHTML = filtered.map(t => `
+      <tr>
+        <td>${escapeHTML(t.description)}</td>
+        <td>${escapeHTML(t.category)}</td>
+        <td>
+          <span class="badge ${t.type === "income" ? "success" : "danger"}">
+            ${t.type === "income" ? "Income" : "Expense"}
+          </span>
+        </td>
+        <td>${money(t.amount)}</td>
+        <td>${escapeHTML(t.date)}</td>
+        <td>
+          <button onclick="editTransaction('${t.id}')">Edit</button>
+          <button onclick="deleteTransaction('${t.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  const recentTransactions = [...transactions]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5);
+
+  recent.innerHTML = recentTransactions.length
+    ? recentTransactions.map(t => `
+      <tr>
+        <td>${escapeHTML(t.description)}</td>
+        <td>${escapeHTML(t.category)}</td>
+        <td>${escapeHTML(t.type)}</td>
+        <td>${money(t.amount)}</td>
+        <td>${escapeHTML(t.date)}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="5">No transactions yet.</td></tr>`;
+
+  const count = $("tableCount");
+  if (count) count.textContent = `${filtered.length} transactions`;
+}
+
+$("transactionForm")?.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const description = $("description").value.trim();
+  const category = $("category").value.trim();
+  const amount = Number($("amount").value);
+  const type = $("type").value;
+  const date = $("date").value;
+
+  if (!description || !category || !date || !Number.isFinite(amount) || amount <= 0) {
+    alert("Please enter valid transaction information.");
+    return;
+  }
+
+  if (!["income", "expense"].includes(type)) {
+    alert("Invalid transaction type.");
+    return;
+  }
+
+  if (editingId) {
+    const transaction = transactions.find(t => t.id === editingId);
+
+    if (transaction) {
+      transaction.description = description;
+      transaction.category = category;
+      transaction.amount = amount;
+      transaction.type = type;
+      transaction.date = date;
+      transaction.updatedAt = Date.now();
+    }
+
+    editingId = null;
+  } else {
+    transactions.push({
+      id: createReference(),
+      reference: createReference(),
+      description,
+      category,
+      amount,
+      type,
+      date,
+      createdAt: Date.now()
     });
   }
 
-  const DB_RECORDS = 'ecartix_ledger_db_v4';
-  const DB_SETTINGS = 'ecartix_settings_db_v4';
+  saveData();
+  updateDashboard();
+  event.target.reset();
 
-  const RATES = {
-    DZD: { symbol: 'د.ج', factor: 1 },
-    EUR: { symbol: '€', factor: 1 / 145 },
-    USD: { symbol: '$', factor: 1 / 134 }
-  };
+  const button = $("transactionForm").querySelector('button[type="submit"]');
+  if (button) button.textContent = "Save Transaction";
 
-  const SEED_DATA = [
-    {
-      id: 'item-101',
-      period: 'nov-2026',
-      title: 'الإنتاج والتشغيل الرئيسي',
-      category: 'الإنتاج والتشغيل',
-      planned: 1600000,
-      actual: 1820000,
-      note: 'تحسن مردودية خطوط الإنتاج',
-      date: '2026-11-04 09:20'
-    },
-    {
-      id: 'item-102',
-      period: 'nov-2026',
-      title: 'المبيعات والإيرادات',
-      category: 'المبيعات والإيرادات',
-      planned: 1100000,
-      actual: 1240000,
-      note: 'نمو الطلب الشهري',
-      date: '2026-11-11 15:40'
-    },
-    {
-      id: 'item-103',
-      period: 'oct-2026',
-      title: 'المصاريف الإدارية',
-      category: 'المصاريف الإدارية',
-      planned: 950000,
-      actual: 890000,
-      note: 'تحكم جيد في النفقات',
-      date: '2026-10-18 12:10'
+  alert("Transaction saved successfully!");
+});
+
+function editTransaction(id) {
+  const t = transactions.find(item => item.id === id);
+  if (!t) return;
+
+  editingId = id;
+
+  $("description").value = t.description;
+  $("category").value = t.category;
+  $("amount").value = t.amount;
+  $("type").value = t.type;
+  $("date").value = t.date;
+
+  const button = $("transactionForm").querySelector('button[type="submit"]');
+  if (button) button.textContent = "Update Transaction";
+
+  showSection("ledger");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function deleteTransaction(id) {
+  if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+  transactions = transactions.filter(t => t.id !== id);
+
+  if (editingId === id) editingId = null;
+
+  saveData();
+  updateDashboard();
+}
+
+$("searchInput")?.addEventListener("input", renderTransactions);
+
+// ---------- BUDGET MANAGEMENT ----------
+
+$("budgetForm")?.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const amount = Number($("budgetAmount").value);
+  const selectedCurrency = $("currency").value;
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    alert("Enter a valid budget amount.");
+    return;
+  }
+
+  if (currency !== selectedCurrency && transactions.length > 0) {
+    if (!confirm("Changing currency does not convert existing amounts. Continue?")) {
+      return;
     }
+  }
+
+  budget = amount;
+  currency = selectedCurrency;
+
+  saveData();
+  updateDashboard();
+
+  alert("Budget saved successfully!");
+});
+
+// ---------- DASHBOARD ----------
+
+function updateDashboard() {
+  const expenses = getExpenses();
+  const income = getIncome();
+  const variance = getVariance();
+  const utilization = getUtilization();
+
+  if ($("totalPlan")) $("totalPlan").textContent = formatMoney(budget);
+  if ($("totalActual")) $("totalActual").textContent = formatMoney(expenses);
+
+  if ($("totalVariance")) {
+    $("totalVariance").textContent = formatMoney(variance);
+    $("totalVariance").className = variance >= 0 ? "positive" : "negative";
+  }
+
+  if ($("performanceIndex")) {
+    $("performanceIndex").textContent = formatMoney(utilization) + "%";
+  }
+
+  if ($("analysisBudget")) $("analysisBudget").textContent = formatMoney(budget);
+  if ($("analysisActual")) $("analysisActual").textContent = formatMoney(expenses);
+  if ($("analysisVariance")) $("analysisVariance").textContent = formatMoney(variance);
+
+  if ($("analysisUtilization")) {
+    $("analysisUtilization").textContent = formatMoney(utilization) + "%";
+  }
+
+  const varianceDetails = $("varianceDetails");
+
+  if (varianceDetails) {
+    varianceDetails.innerHTML = `
+      <p>Planned expenses: <strong>${money(budget)}</strong></p>
+      <p>Actual expenses: <strong>${money(expenses)}</strong></p>
+      <p>Budget variance: <strong class="${variance >= 0 ? "positive" : "negative"}">${money(variance)}</strong></p>
+      <p>Actual income: <strong>${money(income)}</strong></p>
+      <p>Net result: <strong>${money(income - expenses)}</strong></p>
+      <p>Status: <strong>${budget === 0 ? "Budget not configured" : variance >= 0 ? "Within budget" : "Over budget"}</strong></p>
+    `;
+  }
+
+  const recentTotal = $("totalTransactions");
+  if (recentTotal) recentTotal.textContent = transactions.length;
+
+  renderTransactions();
+  updateCharts();
+}
+
+// ---------- CHARTS ----------
+
+let budgetChart = null;
+let overviewChart = null;
+
+function updateCharts() {
+  if (typeof Chart === "undefined") return;
+
+  const budgetCanvas = $("budgetChart");
+  const overviewCanvas = $("overviewChart");
+
+  if (budgetCanvas) {
+    if (budgetChart) budgetChart.destroy();
+
+    budgetChart = new Chart(budgetCanvas, {
+      type: "bar",
+      data: {
+        labels: ["Budget", "Actual Expenses"],
+        datasets: [{
+          label: "Amount",
+          data: [Number(budget), getExpenses()],
+          backgroundColor: ["#3978f6", "#e99b42"],
+          borderRadius: 8,
+          maxBarThickness: 65
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  if (overviewCanvas) {
+    if (overviewChart) overviewChart.destroy();
+
+    overviewChart = new Chart(overviewCanvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Income", "Expenses"],
+        datasets: [{
+          data: [getIncome(), getExpenses()],
+          backgroundColor: ["#16a779", "#e99b42"],
+          borderWidth: 0,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
+      }
+    });
+  }
+}
+
+// ---------- SIMULATION LAB ----------
+
+function runSimulation() {
+  const rate = Number($("simulationRate")?.value);
+
+  if (!Number.isFinite(rate) || rate < -100 || rate > 1000) {
+    alert("Enter a simulation rate between -100% and 1000%.");
+    return;
+  }
+
+  const projected = getExpenses() * (1 + rate / 100);
+  const projectedVariance = Number(budget) - projected;
+
+  const result = $("simulationResult");
+
+  if (result) {
+    result.innerHTML = `
+      Projected expenses: <strong>${money(projected)}</strong><br>
+      Projected variance: <strong class="${projectedVariance >= 0 ? "positive" : "negative"}">${money(projectedVariance)}</strong><br>
+      Scenario: <strong>${rate}% change in expenses</strong>
+    `;
+  }
+}
+
+// ---------- CSV EXPORT ----------
+
+function exportCSV() {
+  if (!transactions.length) {
+    alert("There are no transactions to export.");
+    return;
+  }
+
+  const headers = [
+    "Reference",
+    "Description",
+    "Category",
+    "Type",
+    "Amount",
+    "Currency",
+    "Date"
   ];
 
-  const appState = {
-    records: [],
-    settings: {
-      currency: 'DZD',
-      lang: 'ar',
-      period: 'nov-2026',
-      dark: false
-    }
-  };
+  const rows = transactions.map(t => [
+    t.reference,
+    t.description,
+    t.category,
+    t.type,
+    t.amount,
+    currency,
+    t.date
+  ]);
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  const csv = [headers, ...rows]
+    .map(row => row.map(value =>
+      '"' + String(value ?? "").replace(/"/g, '""') + '"'
+    ).join(","))
+    .join("\n");
 
-  function esc(val) {
-    return String(val || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function loadData() {
-    try {
-      const rawRec = localStorage.getItem(DB_RECORDS);
-      appState.records = rawRec ? JSON.parse(rawRec) : SEED_DATA.slice();
-    } catch (_) {
-      appState.records = SEED_DATA.slice();
-    }
-
-    try {
-      const rawSet = localStorage.getItem(DB_SETTINGS);
-      if (rawSet) {
-        appState.settings = Object.assign({}, appState.settings, JSON.parse(rawSet));
-      }
-    } catch (_) {}
-  }
-
-  function persistRecords() {
-    localStorage.setItem(DB_RECORDS, JSON.stringify(appState.records));
-  }
-
-  function persistSettings() {
-    localStorage.setItem(DB_SETTINGS, JSON.stringify(appState.settings));
-  }
-
-  function fmtMoney(dzdValue, withSign) {
-    const cfg = RATES[appState.settings.currency] || RATES.DZD;
-    const val = Number(dzdValue || 0) * cfg.factor;
-    const numStr = Math.abs(val).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-
-    if (withSign) {
-      const sign = val > 0 ? '+' : val < 0 ? '-' : '';
-      return sign + numStr + ' ' + cfg.symbol;
-    }
-    return (val < 0 ? '-' : '') + numStr + ' ' + cfg.symbol;
-  }
-
-  function currentRecords() {
-    return appState.records.filter(function (r) {
-      return r.period === appState.settings.period;
-    });
-  }
-
-  function calcTotals(rows) {
-    let planned = 0;
-    let actual = 0;
-    rows.forEach(function (r) {
-      planned += Number(r.planned || 0);
-      actual += Number(r.actual || 0);
-    });
-    const variance = actual - planned;
-    const performance = planned > 0 ? (actual / planned) * 100 : 0;
-    return { planned, actual, variance, performance };
-  }
-
-  function openTab(tabName) {
-    document.querySelectorAll('.nav-item').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.target === tabName);
-    });
-    document.querySelectorAll('.tab-view').forEach(function (view) {
-      view.classList.toggle('active', view.id === 'view-' + tabName);
-    });
-  }
-
-  function drawDashboard() {
-    const rows = currentRecords();
-    const t = calcTotals(rows);
-
-    if ($('kpiPlanned')) $('kpiPlanned').textContent = fmtMoney(t.planned, false);
-    if ($('kpiActual')) $('kpiActual').textContent = fmtMoney(t.actual, false);
-    if ($('kpiVariance')) $('kpiVariance').textContent = fmtMoney(t.variance, true);
-    if ($('kpiPerformance')) $('kpiPerformance').textContent = t.performance.toFixed(1) + '%';
-
-    if ($('kpiVarianceStatus')) {
-      if (t.variance > 0) {
-        $('kpiVarianceStatus').textContent = 'فارق إيجابي (+ أعلى من المخطط)';
-      } else if (t.variance < 0) {
-        $('kpiVarianceStatus').textContent = 'فارق سلبي (- أقل من المخطط)';
-      } else {
-        $('kpiVarianceStatus').textContent = 'متطابق مع الموازنة المخططة';
-      }
-    }
-
-    const barPct = Math.max(0, Math.min(100, (t.performance / 150) * 100));
-    if ($('performanceBar')) $('performanceBar').style.width = barPct + '%';
-    if ($('progressCaption')) $('progressCaption').textContent = 'نسبة التحقق الحالية: ' + t.performance.toFixed(1) + '%';
-    if ($('recordCountChip')) $('recordCountChip').textContent = rows.length + ' سجل محفوظ';
-
-    const recentEl = $('recentLedgerList');
-    if (!recentEl) return;
-
-    const topItems = rows.slice(0, 3);
-    if (!topItems.length) {
-      recentEl.innerHTML = '<div class="ledger-sub">لا توجد عمليات بعد لهذه الفترة. أضيفي بنداً من تبويب "الفروقات".</div>';
-      return;
-    }
-
-    recentEl.innerHTML = topItems
-      .map(function (item) {
-        const diff = Number(item.actual) - Number(item.planned);
-        const cls = diff >= 0 ? 'pos-text' : 'neg-text';
-        return (
-          '<div class="ledger-item">' +
-            '<div class="ledger-main">' +
-              '<div class="ledger-title">' + esc(item.title) + '</div>' +
-              '<div class="ledger-sub">' + esc(item.category) + ' • ' + esc(item.date) + '</div>' +
-            '</div>' +
-            '<div class="ledger-side">' +
-              '<div class="ledger-amount ' + cls + '">' + fmtMoney(diff, true) + '</div>' +
-              '<div class="ledger-sub">فعلي: ' + fmtMoney(item.actual, false) + '</div>' +
-            '</div>' +
-          '</div>'
-        );
-      })
-      .join('');
-  }
-
-  function drawBreakdown() {
-    const box = $('varianceBreakdownList');
-    if (!box) return;
-
-    const rows = currentRecords();
-    if (!rows.length) {
-      box.innerHTML = '<div class="ledger-sub">أضيفي بنداً جديداً بالأعلى لعرض تحليل الفارق.</div>';
-      return;
-    }
-
-    box.innerHTML = rows
-      .map(function (item) {
-        const diff = Number(item.actual) - Number(item.planned);
-        const pct = Number(item.planned) > 0 ? ((diff / Number(item.planned)) * 100).toFixed(1) : '0.0';
-        const cls = diff >= 0 ? 'pos-text' : 'neg-text';
-        return (
-          '<div class="ledger-item">' +
-            '<div class="ledger-main">' +
-              '<div class="ledger-title">' + esc(item.title) + '</div>' +
-              '<div class="ledger-sub">مخطط: ' + fmtMoney(item.planned, false) + ' | فعلي: ' + fmtMoney(item.actual, false) + '</div>' +
-            '</div>' +
-            '<div class="ledger-side">' +
-              '<div class="ledger-amount ' + cls + '">' + fmtMoney(diff, true) + '</div>' +
-              '<div class="ledger-sub">(' + (diff >= 0 ? '+' : '') + pct + '%)</div>' +
-            '</div>' +
-          '</div>'
-        );
-      })
-      .join('');
-  }
-
-  function drawLedger() {
-    const listEl = $('fullLedgerList');
-    if (!listEl) return;
-
-    const q = ($('ledgerSearch') ? $('ledgerSearch').value : '').trim().toLowerCase();
-    const mode = $('ledgerFilter') ? $('ledgerFilter').value : 'all';
-
-    const filtered = currentRecords().filter(function (item) {
-      const diff = Number(item.actual) - Number(item.planned);
-      const okMode =
-        mode === 'all' ||
-        (mode === 'favorable' && diff >= 0) ||
-        (mode === 'unfavorable' && diff < 0);
-      const textBlob = (item.title + ' ' + item.category + ' ' + (item.note || '')).toLowerCase();
-      const okQuery = !q || textBlob.indexOf(q) !== -1;
-      return okMode && okQuery;
-    });
-
-    if (!filtered.length) {
-      listEl.innerHTML = '<div class="ledger-sub">لا توجد سجلات مطابقة للبحث أو التصفية.</div>';
-      return;
-    }
-
-    listEl.innerHTML = filtered
-      .map(function (item) {
-        const diff = Number(item.actual) - Number(item.planned);
-        const cls = diff >= 0 ? 'pos-text' : 'neg-text';
-        return (
-          '<div class="ledger-item">' +
-            '<div class="ledger-main">' +
-              '<div class="ledger-title">' + esc(item.title) + '</div>' +
-              '<div class="ledger-sub">' + esc(item.category) + ' • ' + esc(item.date) + '</div>' +
-              (item.note ? '<div class="ledger-sub">ملاحظة: ' + esc(item.note) + '</div>' : '') +
-            '</div>' +
-            '<div class="ledger-side">' +
-              '<div class="ledger-amount ' + cls + '">' + fmtMoney(diff, true) + '</div>' +
-              '<div class="ledger-sub">فعلي: ' + fmtMoney(item.actual, false) + '</div>' +
-              '<button type="button" class="delete-mini-btn" data-del="' + esc(item.id) + '">حذف</button>' +
-            '</div>' +
-          '</div>'
-        );
-      })
-      .join('');
-  }
-
-  function drawLab() {
-    if (!$('simVolumeSlider') || !$('simPriceSlider')) return;
-    const v = Number($('simVolumeSlider').value);
-    const p = Number($('simPriceSlider').value);
-
-    if ($('simVolumeVal')) $('simVolumeVal').textContent = (v >= 0 ? '+' : '') + v + '%';
-    if ($('simPriceVal')) $('simPriceVal').textContent = (p >= 0 ? '+' : '') + p + '%';
-
-    const t = calcTotals(currentRecords());
-    const base = t.actual > 0 ? t.actual : t.planned;
-    const simActual = base * (1 + v / 100) * (1 + p / 100);
-    const simVar = simActual - t.planned;
-
-    if ($('simProjectedActual')) $('simProjectedActual').textContent = fmtMoney(simActual, false);
-    if ($('simProjectedVariance')) $('simProjectedVariance').textContent = fmtMoney(simVar, true);
-  }
-
-  function updatePreview() {
-    if (!$('previewDiffValue')) return;
-    const pl = Number($('plannedAmount') ? $('plannedAmount').value : 0) || 0;
-    const ac = Number($('actualAmount') ? $('actualAmount').value : 0) || 0;
-    const diff = ac - pl;
-    const pct = pl > 0 ? ((diff / pl) * 100).toFixed(1) : '0.0';
-    $('previewDiffValue').textContent = fmtMoney(diff, true) + ' (' + (diff >= 0 ? '+' : '') + pct + '%)';
-    $('previewDiffValue').className = diff >= 0 ? 'pos-text' : 'neg-text';
-  }
-
-  function pushChat(msg, who) {
-    const box = $('aiChatBox');
-    if (!box) return;
-    const bubble = document.createElement('div');
-    bubble.className = 'chat-msg ' + (who === 'user' ? 'user' : 'bot');
-    bubble.textContent = msg;
-    box.appendChild(bubble);
-    box.scrollTop = box.scrollHeight;
-  }
-
-  function replyAi(question) {
-    const t = calcTotals(currentRecords());
-    const count = currentRecords().length;
-    const q = String(question || '').toLowerCase();
-
-    if (q.indexOf('إحصاء') !== -1 || q.indexOf('سجل') !== -1) {
-      return 'يوجد حالياً ' + count + ' سجل في هذه الفترة. المخطط ' + fmtMoney(t.planned, false) + ' والفعلي ' + fmtMoney(t.actual, false) + '.';
-    }
-    if (q.indexOf('سبب') !== -1 || q.indexOf('تفسير') !== -1 || q.indexOf('تعامل') !== -1) {
-      if (t.variance > 0) {
-        return 'الفارق إيجابي (' + fmtMoney(t.variance, true) + '). يُفضل فصل أثر الحجم عن أثر السعر لتحديد مصدر الزيادة بدقة.';
-      }
-      if (t.variance < 0) {
-        return 'الفارق سلبي (' + fmtMoney(t.variance, true) + '). يُنصح بمراجعة البنود المتأخرة أو التحقق من وفورات التكلفة.';
-      }
-      return 'الفعلي مساوٍ للمخطط تماماً، ولا يوجد انحراف حالياً.';
-    }
-    return 'ملخص الفترة: المخطط ' + fmtMoney(t.planned, false) + '، الفعلي ' + fmtMoney(t.actual, false) + '، الفارق ' + fmtMoney(t.variance, true) + '، ونسبة الأداء ' + t.performance.toFixed(1) + '%.';
-  }
-
-  function refreshUI() {
-    document.body.classList.toggle('dark-theme', Boolean(appState.settings.dark));
-    if ($('currencySelect')) $('currencySelect').value = appState.settings.currency;
-    if ($('langSelect')) $('langSelect').value = appState.settings.lang;
-    if ($('periodSelect')) $('periodSelect').value = appState.settings.period;
-
-    drawDashboard();
-    drawBreakdown();
-    drawLedger();
-    drawLab();
-    updatePreview();
-  }
-
-  function wireEvents() {
-    document.querySelectorAll('.nav-item').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        openTab(btn.dataset.target);
-      });
-    });
-
-    document.querySelectorAll('[data-jump]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        openTab(btn.dataset.jump);
-      });
-    });
-
-    if ($('quickAddBtn')) {
-      $('quickAddBtn').addEventListener('click', function () {
-        openTab('variance');
-        if ($('itemTitle')) $('itemTitle').focus();
-      });
-    }
-
-    if ($('currencySelect')) {
-      $('currencySelect').addEventListener('change', function (e) {
-        appState.settings.currency = e.target.value;
-        persistSettings();
-        refreshUI();
-      });
-    }
-
-    if ($('langSelect')) {
-      $('langSelect').addEventListener('change', function (e) {
-        appState.settings.lang = e.target.value;
-        document.documentElement.lang = e.target.value;
-        document.documentElement.dir = e.target.value === 'ar' ? 'rtl' : 'ltr';
-        persistSettings();
-      });
-    }
-
-    if ($('periodSelect')) {
-      $('periodSelect').addEventListener('change', function (e) {
-        appState.settings.period = e.target.value;
-        persistSettings();
-        refreshUI();
-      });
-    }
-
-    if ($('themeToggle')) {
-      $('themeToggle').addEventListener('click', function () {
-        appState.settings.dark = !appState.settings.dark;
-        persistSettings();
-        refreshUI();
-      });
-    }
-
-    if ($('plannedAmount')) $('plannedAmount').addEventListener('input', updatePreview);
-    if ($('actualAmount')) $('actualAmount').addEventListener('input', updatePreview);
-
-    if ($('varianceForm')) {
-      $('varianceForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const title = ($('itemTitle').value || '').trim();
-        const category = $('itemCategory').value;
-        const planned = Number($('plannedAmount').value);
-        const actual = Number($('actualAmount').value);
-        const note = ($('itemNote').value || '').trim();
-
-        if (!title || isNaN(planned) || isNaN(actual)) return;
-
-        const now = new Date();
-        const stamp =
-          now.getFullYear() +
-          '-' +
-          String(now.getMonth() + 1).padStart(2, '0') +
-          '-' +
-          String(now.getDate()).padStart(2, '0') +
-          ' ' +
-          String(now.getHours()).padStart(2, '0') +
-          ':' +
-          String(now.getMinutes()).padStart(2, '0');
-
-        appState.records.unshift({
-          id: 'item-' + Date.now(),
-          period: appState.settings.period,
-          title: title,
-          category: category,
-          planned: planned,
-          actual: actual,
-          note: note,
-          date: stamp
-        });
-
-        persistRecords();
-        e.target.reset();
-        refreshUI();
-        openTab('ledger');
-      });
-    }
-
-    if ($('fullLedgerList')) {
-      $('fullLedgerList').addEventListener('click', function (e) {
-        const id = e.target.dataset.del;
-        if (!id) return;
-        appState.records = appState.records.filter(function (r) {
-          return r.id !== id;
-        });
-        persistRecords();
-        refreshUI();
-      });
-    }
-
-    if ($('clearLedgerBtn')) {
-      $('clearLedgerBtn').addEventListener('click', function () {
-        appState.records = appState.records.filter(function (r) {
-          return r.period !== appState.settings.period;
-        });
-        persistRecords();
-        refreshUI();
-      });
-    }
-
-    if ($('ledgerSearch')) $('ledgerSearch').addEventListener('input', drawLedger);
-    if ($('ledgerFilter')) $('ledgerFilter').addEventListener('change', drawLedger);
-
-    if ($('simVolumeSlider')) $('simVolumeSlider').addEventListener('input', drawLab);
-    if ($('simPriceSlider')) $('simPriceSlider').addEventListener('input', drawLab);
-
-    if ($('saveScenarioBtn')) {
-      $('saveScenarioBtn').addEventListener('click', function () {
-        const v = Number($('simVolumeSlider').value);
-        const p = Number($('simPriceSlider').value);
-        const t = calcTotals(currentRecords());
-        const base = t.actual > 0 ? t.actual : t.planned;
-        const simActual = Math.round(base * (1 + v / 100) * (1 + p / 100));
-
-        const now = new Date();
-        const stamp =
-          now.getFullYear() +
-          '-' +
-          String(now.getMonth() + 1).padStart(2, '0') +
-          '-' +
-          String(now.getDate()).padStart(2, '0');
-
-        appState.records.unshift({
-          id: 'sim-' + Date.now(),
-          period: appState.settings.period,
-          title: 'محاكاة (كمية ' + (v >= 0 ? '+' : '') + v + '%، سعر ' + (p >= 0 ? '+' : '') + p + '%)',
-          category: 'مختبر المحاكاة',
-          planned: t.planned,
-          actual: simActual,
-          note: 'محفوظ من مختبر المحاكاة',
-          date: stamp
-        });
-
-        persistRecords();
-        refreshUI();
-        openTab('ledger');
-      });
-    }
-
-    if ($('aiChatForm')) {
-      $('aiChatForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const inp = $('aiPromptInput');
-        const txt = (inp.value || '').trim();
-        if (!txt) return;
-        pushChat(txt, 'user');
-        inp.value = '';
-        setTimeout(function () {
-          pushChat(replyAi(txt), 'bot');
-        }, 160);
-      });
-    }
-
-    document.querySelectorAll('.prompt-chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        const txt = chip.dataset.prompt || chip.textContent;
-        pushChat(txt, 'user');
-        setTimeout(function () {
-          pushChat(replyAi(txt), 'bot');
-        }, 140);
-      });
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    loadData();
-    wireEvents();
-    refreshUI();
-    pushChat('مرحباً بكِ في مساعد ECARTIX الذكي! اسأليني عن الفروقات أو السجل أو وضع الموازنة.', 'bot');
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
   });
-})();
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "ecartix-financial-ledger.csv";
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+window.exportCSV = exportCSV;
+window.editTransaction = editTransaction;
+window.deleteTransaction = deleteTransaction;
+window.runSimulation = runSimulation;
+window.showSection = showSection;
+
+// ---------- THEME ----------
+
+function applyTheme(theme) {
+  document.body.classList.toggle("dark", theme === "dark");
+
+  const button = $("themeToggle");
+  if (button) button.textContent = theme === "dark" ? "☀" : "☾";
+}
+
+applyTheme(loadData(STORAGE.theme, "light"));
+
+$("themeToggle")?.addEventListener("click", () => {
+  const next = document.body.classList.contains("dark") ? "light" : "dark";
+
+  localStorage.setItem(STORAGE.theme, JSON.stringify(next));
+  applyTheme(next);
+});
+
+// ---------- LANGUAGE ----------
+
+const translations = {
+  en: {
+    dashboard: "Financial Dashboard",
+    ledger: "Financial Ledger",
+    budget: "Budget Management",
+    variance: "Variance Analysis",
+    simulation: "Simulation Lab",
+    reports: "Reports Center",
+    settings: "Settings"
+  },
+  fr: {
+    dashboard: "Tableau de bord financier",
+    ledger: "Journal financier",
+    budget: "Gestion du budget",
+    variance: "Analyse des écarts",
+    simulation: "Laboratoire de simulation",
+    reports: "Centre de rapports",
+    settings: "Paramètres"
+  },
+  ar: {
+    dashboard: "لوحة التحكم المالية",
+    ledger: "السجل المالي",
+    budget: "إدارة الميزانية",
+    variance: "تحليل الفروقات",
+    simulation: "مختبر المحاكاة",
+    reports: "مركز التقارير",
+    settings: "الإعدادات"
+  }
+};
+
+$("languageSelect")?.addEventListener("change", event => {
+  const language = event.target.value;
+  const rtl = language === "ar";
+
+  document.documentElement.lang = language;
+  document.documentElement.dir = rtl ? "rtl" : "ltr";
+
+  document.querySelectorAll(".sidebar nav a").forEach(link => {
+    const section = link.getAttribute("href").slice(1);
+    if (translations[language][section]) {
+      const icon = link.querySelector("span");
+      link.textContent = translations[language][section];
+      if (icon) link.prepend(icon);
+    }
+  });
+
+  const active = location.hash.slice(1) || "dashboard";
+  showSection(active);
+});
+
+// ---------- INITIALIZATION ----------
+
+function initializeECARTIX() {
+  if ($("currency")) $("currency").value = currency;
+
+  if ($("budgetAmount")) $("budgetAmount").value = budget;
+
+  if ($("date")) {
+    $("date").value = new Date().toISOString().slice(0, 10);
+  }
+
+  updateDashboard();
+
+  const initialPage = location.hash.replace("#", "");
+  const validPages = [
+    "dashboard",
+    "ledger",
+    "budget",
+    "variance",
+    "simulation",
+    "reports",
+    "settings"
+  ];
+
+  showSection(validPages.includes(initialPage) ? initialPage : "dashboard");
+
+  console.log("ECARTIX 2.0 initialized successfully.");
+}
+
+initializeECARTIX();
