@@ -1,0 +1,22 @@
+{
+  "name": "ECARTIX — Understand Every Difference",
+  "short_name": "ECARTIX",
+  "description": "Financial, accounting, statistical and budget variance analysis platform.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F3FF",
+  "theme_color": "#7655E8",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
