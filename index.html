@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ECARTIX — Understand Every Difference</title>
+  <meta name="theme-color" content="#7655E8" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icon-512.png" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-card">
+      <div class="delta-logo">Δ</div>
+      <div class="splash-title">ECARTIX</div>
+      <div class="splash-taglines">
+        <p id="splashTagline">افهم كل فرق — Understand Every Difference</p>
+        <p>Comprendre chaque différence</p>
+        <p>Understand Every Difference</p>
+      </div>
+      <div class="splash-bar"><div class="splash-progress"></div></div>
+      <button class="btn btn-primary" onclick="skipSplash()">تخطي / Skip</button>
+    </div>
+  </div>
+
+  <!-- Password Lock Modal -->
+  <div id="lockModal" class="modal-overlay">
+    <div class="card" style="max-width:360px;width:100%;text-align:center;">
+      <h3 class="card-title" style="margin-bottom:10px;">ECARTIX 🔒</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">أدخل كلمة المرور لفتح التطبيق</p>
+      <div class="form-group">
+        <input id="unlockInput" type="password" placeholder="Password" />
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="unlockApp()">فتح / Unlock</button>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">Δ</div>
+      <div class="brand-text">
+        <h1>ECARTIX</h1>
+        <span>Understand Every Difference</span>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <select id="projectSelect" onchange="switchProject(this.value)" style="width:auto;min-width:150px;"></select>
+      <select id="currencySelect" onchange="changeCurrency(this.value)" style="width:auto;">
+        <option value="DZD">DZD (د.ج)</option>
+        <option value="EUR">EUR (€)</option>
+        <option value="USD">USD ($)</option>
+        <option value="GBP">GBP (£)</option>
+        <option value="CAD">CAD (CA$)</option>
+        <option value="CHF">CHF</option>
+        <option value="SAR">SAR (﷼)</option>
+        <option value="AED">AED (د.إ)</option>
+        <option value="MAD">MAD (د.م)</option>
+        <option value="TND">TND (د.ت)</option>
+      </select>
+      <select id="langSelect" onchange="setLanguage(this.value)" style="width:auto;">
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+      </select>
+      <button class="btn btn-outline" onclick="toggleDarkMode()" title="Theme">🌓</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">لوحة القيادة</button>
+    <button class="nav-btn" data-tab="variance" onclick="switchTab('variance')">تحليل الفروقات</button>
+    <button class="nav-btn" data-tab="lab" onclick="switchTab('lab')">مختبر المحاكاة LAB</button>
+    <button class="nav-btn" data-tab="formulas" onclick="switchTab('formulas')">مكتبة القوانين</button>
+    <button class="nav-btn" data-tab="calendar" onclick="switchTab('calendar')">التقويم والزمن</button>
+    <button class="nav-btn" data-tab="currencies" onclick="switchTab('currencies')">العملات</button>
+    <button class="nav-btn" data-tab="statistics" onclick="switchTab('statistics')">الإحصاء والرسوم</button>
+    <button class="nav-btn" data-tab="reports" onclick="switchTab('reports')">التقارير</button>
+    <button class="nav-btn" data-tab="data" onclick="switchTab('data')">إدارة البيانات</button>
+  </nav>
+
+  <main class="container">
+    <!-- 1. Dashboard -->
+    <section id="sec-dashboard" class="section active">
+      <div id="kpiGrid" class="grid-kpi"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">المخطط المالي السريع</h2>
+            <button class="btn btn-mint" onclick="switchTab('variance')">+ إضافة بند</button>
+          </div>
+          <div class="chart-box"><canvas id="barChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">المشاريع الحديثة</h2>
+            <button class="btn btn-yellow" onclick="switchTab('lab')">VARIANCE LAB</button>
+          </div>
+          <div id="recentProjectsList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Financial Variance Analysis -->
+    <section id="sec-variance" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">إضافة / تعديل بند تحليل الفروقات</h2>
+          <button id="cancelEditBtn" class="btn btn-outline" style="display:none;" onclick="cancelEdit()">إلغاء التعديل</button>
+        </div>
+
+        <form id="varianceForm" onsubmit="saveVarianceItem(event)">
+          <div class="grid-3">
+            <div class="form-group">
+              <label>اسم البند</label>
+              <input id="itemName" type="text" required placeholder="مثال: مبيعات نوفمبر" />
+            </div>
+            <div class="form-group">
+              <label>نوع التحليل / الفئة</label>
+              <select id="itemCategory"></select>
+            </div>
+            <div class="form-group">
+              <label>التاريخ</label>
+              <input id="itemDate" type="date" value="2026-11-21" />
+            </div>
+            <div class="form-group">
+              <label>القيمة المخططة (Planned)</label>
+              <input id="itemPlanned" type="number" step="any" required />
+            </div>
+            <div class="form-group">
+              <label>القيمة الفعلية (Actual)</label>
+              <input id="itemActual" type="number" step="any" required />
+            </div>
+            <div class="form-group">
+              <label>السعر المعياري / الفعلي (اختياري)</label>
+              <div style="display:flex;gap:6px;">
+                <input id="itemStdPrice" type="number" step="any" placeholder="Std P" />
+                <input id="itemActPrice" type="number" step="any" placeholder="Act P" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>الكمية المعيارية / الفعلية (اختياري)</label>
+              <div style="display:flex;gap:6px;">
+                <input id="itemStdQty" type="number" step="any" placeholder="Std Q" />
+                <input id="itemActQty" type="number" step="any" placeholder="Act Q" />
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">حفظ وحساب الفارق تلقائياً</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">سجل الفروقات المحسوبة</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="searchInput" type="search" placeholder="بحث..." oninput="renderVarianceTable()" style="width:160px;" />
+            <select id="filterCategory" onchange="renderVarianceTable()" style="width:auto;"></select>
+            <select id="filterStatus" onchange="renderVarianceTable()" style="width:auto;">
+              <option value="all">الكل</option>
+              <option value="fav">ملائم (Favorable)</option>
+              <option value="unfav">غير ملائم (Unfavorable)</option>
+              <option value="neutral">متعادل</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>البند</th>
+                <th>الفئة</th>
+                <th>المخطط</th>
+                <th>الفعلي</th>
+                <th>الفارق المطلق</th>
+                <th>النسبة / الإنجاز</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="varianceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ECARTIX VARIANCE LAB -->
+    <section id="sec-lab" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">ECARTIX VARIANCE LAB — مختبر المحاكاة التفاعلي</h2>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>محاكاة تغير المصروفات (%)</label>
+            <input id="labExpensePct" type="number" step="1" value="-10" oninput="runSimulation()" />
+          </div>
+          <div class="form-group">
+            <label>محاكاة تغير أسعار البيع (%)</label>
+            <input id="labPricePct" type="number" step="1" value="5" oninput="runSimulation()" />
+          </div>
+          <div class="form-group">
+            <label>محاكاة تغير حجم الإنتاج (%)</label>
+            <input id="labProdPct" type="number" step="1" value="8" oninput="runSimulation()" />
+          </div>
+        </div>
+        <div id="labResultBox" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- 4. Formula Library -->
+    <section id="sec-formulas" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">المؤشرات الإحصائية المباشرة للمشروع الحالي</h2>
+        </div>
+        <div id="liveStatsBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">مكتبة القوانين المالية والإحصائية</h2>
+        </div>
+        <div id="formulasList"></div>
+      </div>
+    </section>
+
+    <!-- 5. Calendar & Time Analysis -->
+    <section id="sec-calendar" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">التقويم والتحليل الزمني (2020 – 2035)</h2>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>السنة</label>
+            <select id="calYear" onchange="runCalendarAnalysis()">
+              <option value="all">كل السنوات</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+              <option value="2031">2031</option>
+              <option value="2032">2032</option>
+              <option value="2033">2033</option>
+              <option value="2034">2034</option>
+              <option value="2035">2035</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>الشهر</label>
+            <select id="calMonth" onchange="runCalendarAnalysis()">
+              <option value="all">كل الأشهر</option>
+              <option value="01">01 - يناير</option>
+              <option value="02">02 - فبراير</option>
+              <option value="03">03 - مارس</option>
+              <option value="04">04 - أفريل</option>
+              <option value="05">05 - ماي</option>
+              <option value="06">06 - جوان</option>
+              <option value="07">07 - جويلية</option>
+              <option value="08">08 - أوت</option>
+              <option value="09">09 - سبتمبر</option>
+              <option value="10">10 - أكتوبر</option>
+              <option value="11">11 - نوفمبر</option>
+              <option value="12">12 - ديسمبر</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>الفصل المالي (Quarter)</label>
+            <select id="calQuarter" onchange="runCalendarAnalysis()">
+              <option value="all">كل الفصول</option>
+              <option value="1">Q1 (يناير - مارس)</option>
+              <option value="2">Q2 (أفريل - جوان)</option>
+              <option value="3">Q3 (جويلية - سبتمبر)</option>
+              <option value="4">Q4 (أكتوبر - ديسمبر)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>من تاريخ</label>
+            <input id="calFrom" type="date" onchange="runCalendarAnalysis()" />
+          </div>
+          <div class="form-group">
+            <label>إلى تاريخ</label>
+            <input id="calTo" type="date" onchange="runCalendarAnalysis()" />
+          </div>
+        </div>
+        <div id="calResultBox" style="margin-top:12px;"></div>
+      </div>
+    </section>
+
+    <!-- 6. Multi-Currency -->
+    <section id="sec-currencies" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">نظام العملات المتعددة (العملة الافتراضية: DZD)</h2>
+          <button class="btn btn-mint" onclick="fetchLiveRates()">تحديث الأسعار الحية (API)</button>
+        </div>
+        <div id="currencyRatesGrid" class="grid-3"></div>
+      </div>
+    </section>
+
+    <!-- 7. Statistics & Charts -->
+    <section id="sec-statistics" class="section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">اتجاه الفروقات (Line Chart)</h2></div>
+          <div class="chart-box"><canvas id="lineChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">توزيع الفروقات الملائمة وغير الملائمة (Pie Chart)</h2></div>
+          <div class="chart-box"><canvas id="pieChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Reports -->
+    <section id="sec-reports" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">التقارير والتصدير (PDF / Excel XLSX / CSV)</h2>
+          <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+            <button class="btn btn-mint" onclick="exportExcelXML()">📊 تصدير Excel (.xls)</button>
+            <button class="btn btn-yellow" onclick="exportCSV()">📄 تصدير CSV</button>
+          </div>
+        </div>
+        <p style="color:var(--text-muted);font-size:13px;">
+          يمكنكِ توليد تقرير مفصل للمشروع الحالي أو طباعته بصيغة PDF مباشرة عبر زر الطباعة، أو تصديره إلى Excel و CSV.
+        </p>
+      </div>
+    </section>
+
+    <!-- 9. Data Management -->
+    <section id="sec-data" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">إدارة المشاريع والبيانات</h2>
+          <button class="btn btn-danger" onclick="clearSampleData()">حذف البيانات التجريبية</button>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>إنشاء مشروع تحليل جديد</label>
+            <div style="display:flex;gap:8px;">
+              <input id="newProjectName" type="text" placeholder="اسم المشروع الجديد..." />
+              <button class="btn btn-primary" onclick="createProject()">إنشاء</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>حذف المشروع الحالي</label>
+            <div style="display:flex;gap:8px;">
+              <select id="dataProjectSelect" onchange="switchProject(this.value)"></select>
+              <button class="btn btn-danger" onclick="deleteActiveProject()">حذف</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">النسخ الاحتياطي، الاستعادة، وحماية كلمة المرور</h2>
+        </div>
+        <div class="grid-2">
+          <div>
+            <button class="btn btn-mint" onclick="backupJSON()">⬇️ تحميل نسخة احتياطية (JSON)</button>
+            <label class="btn btn-outline" style="margin-inline-start:8px;cursor:pointer;">
+              ⬆️ استعادة نسخة احتياطية
+              <input type="file" accept=".json" style="display:none;" onchange="restoreJSON(event)" />
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input id="lockPassInput" type="password" placeholder="كلمة مرور التطبيق (اختياري)" />
+            <button class="btn btn-primary" onclick="setPasswordLock()">حفظ القفل</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+  </html>
+  
