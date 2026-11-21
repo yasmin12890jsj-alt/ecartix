@@ -13,7 +13,6 @@
 </head>
 <body>
   <div class="app-shell">
-    <!-- الرأس العلوي -->
     <header class="top-header">
       <div class="brand-box">
         <div class="brand-logo">
@@ -48,7 +47,6 @@
       </div>
     </header>
 
-    <!-- شريط الفترة والموازنة -->
     <section class="period-bar">
       <div class="period-select-wrap">
         <span class="period-label">الفترة / الموازنة:</span>
@@ -66,9 +64,7 @@
       </button>
     </section>
 
-    <!-- المحتوى الرئيسي المتغير حسب التبويب السفلي -->
     <main class="main-content">
-      <!-- 1. لوحة القيادة -->
       <section id="view-dashboard" class="tab-view active">
         <div class="kpi-grid">
           <div class="kpi-card card-lavender">
@@ -108,7 +104,6 @@
           </div>
         </div>
 
-        <!-- بطاقة تحليل سريع ومؤشر تقدم -->
         <div class="panel-card">
           <div class="panel-header">
             <div>
@@ -128,7 +123,6 @@
           </div>
         </div>
 
-        <!-- أحدث العمليات في السجل -->
         <div class="panel-card">
           <div class="panel-header">
             <h2 class="panel-title">آخر العمليات المحفوظة في السجل</h2>
@@ -138,7 +132,6 @@
         </div>
       </section>
 
-      <!-- 2. تحليل الفروقات والإدخال -->
       <section id="view-variance" class="tab-view">
         <div class="panel-card">
           <div class="panel-header">
@@ -206,13 +199,12 @@
         </div>
       </section>
 
-      <!-- 3. سجل حفظ البيانات (Ledger) -->
       <section id="view-ledger" class="tab-view">
         <div class="panel-card">
           <div class="panel-header">
             <div>
               <h2 class="panel-title">سجل حفظ البيانات والعمليات</h2>
-              <p class="panel-desc">جميع البيانات المدخلة محفوظة ومرتبة مع إمكانية البحث والحذف أو التصدير</p>
+              <p class="panel-desc">جميع البيانات المدخلة محفوظة ومرتبة مع إمكانية البحث والحذف</p>
             </div>
             <button id="clearLedgerBtn" class="danger-chip-btn">تفريغ السجل</button>
           </div>
@@ -230,7 +222,6 @@
         </div>
       </section>
 
-      <!-- 4. مختبر المحاكاة (Simulation Lab) -->
       <section id="view-lab" class="tab-view">
         <div class="panel-card">
           <div class="panel-header">
@@ -275,7 +266,6 @@
         </div>
       </section>
 
-      <!-- 5. المساعد الذكي (AI Assistant) -->
       <section id="view-ai" class="tab-view">
         <div class="panel-card ai-card">
           <div class="panel-header">
@@ -309,7 +299,6 @@
       </section>
     </main>
 
-    <!-- شريط التنقل السفلي الثابت بأيقونات واضحة -->
     <nav class="bottom-nav" aria-label="التنقل الرئيسي">
       <button class="nav-item active" data-target="dashboard">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
