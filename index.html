@@ -2,395 +2,361 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ECARTIX — Understand Every Difference</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ECARTIX — منصة تحليل الفروقات الذكية</title>
+  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#7655E8" />
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" href="./icon-512.png" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Splash Screen -->
-  <div id="splashScreen" class="splash-screen">
-    <div class="splash-card">
-      <div class="delta-logo">Δ</div>
-      <div class="splash-title">ECARTIX</div>
-      <div class="splash-taglines">
-        <p id="splashTagline">افهم كل فرق — Understand Every Difference</p>
-        <p>Comprendre chaque différence</p>
-        <p>Understand Every Difference</p>
-      </div>
-      <div class="splash-bar"><div class="splash-progress"></div></div>
-      <button class="btn btn-primary" onclick="skipSplash()">تخطي / Skip</button>
-    </div>
-  </div>
-
-  <!-- Password Lock Modal -->
-  <div id="lockModal" class="modal-overlay">
-    <div class="card" style="max-width:360px;width:100%;text-align:center;">
-      <h3 class="card-title" style="margin-bottom:10px;">ECARTIX 🔒</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">أدخل كلمة المرور لفتح التطبيق</p>
-      <div class="form-group">
-        <input id="unlockInput" type="password" placeholder="Password" />
-      </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="unlockApp()">فتح / Unlock</button>
-    </div>
-  </div>
-
-  <!-- Top Bar -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-badge">Δ</div>
-      <div class="brand-text">
-        <h1>ECARTIX</h1>
-        <span>Understand Every Difference</span>
-      </div>
-    </div>
-
-    <div class="top-controls">
-      <select id="projectSelect" onchange="switchProject(this.value)" style="width:auto;min-width:150px;"></select>
-      <select id="currencySelect" onchange="changeCurrency(this.value)" style="width:auto;">
-        <option value="DZD">DZD (د.ج)</option>
-        <option value="EUR">EUR (€)</option>
-        <option value="USD">USD ($)</option>
-        <option value="GBP">GBP (£)</option>
-        <option value="CAD">CAD (CA$)</option>
-        <option value="CHF">CHF</option>
-        <option value="SAR">SAR (﷼)</option>
-        <option value="AED">AED (د.إ)</option>
-        <option value="MAD">MAD (د.م)</option>
-        <option value="TND">TND (د.ت)</option>
-      </select>
-      <select id="langSelect" onchange="setLanguage(this.value)" style="width:auto;">
-        <option value="ar">العربية</option>
-        <option value="fr">Français</option>
-        <option value="en">English</option>
-      </select>
-      <button class="btn btn-outline" onclick="toggleDarkMode()" title="Theme">🌓</button>
-    </div>
-  </header>
-
-  <!-- Navigation Tabs -->
-  <nav class="nav-tabs">
-    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">لوحة القيادة</button>
-    <button class="nav-btn" data-tab="variance" onclick="switchTab('variance')">تحليل الفروقات</button>
-    <button class="nav-btn" data-tab="lab" onclick="switchTab('lab')">مختبر المحاكاة LAB</button>
-    <button class="nav-btn" data-tab="formulas" onclick="switchTab('formulas')">مكتبة القوانين</button>
-    <button class="nav-btn" data-tab="calendar" onclick="switchTab('calendar')">التقويم والزمن</button>
-    <button class="nav-btn" data-tab="currencies" onclick="switchTab('currencies')">العملات</button>
-    <button class="nav-btn" data-tab="statistics" onclick="switchTab('statistics')">الإحصاء والرسوم</button>
-    <button class="nav-btn" data-tab="reports" onclick="switchTab('reports')">التقارير</button>
-    <button class="nav-btn" data-tab="data" onclick="switchTab('data')">إدارة البيانات</button>
-  </nav>
-
-  <main class="container">
-    <!-- 1. Dashboard -->
-    <section id="sec-dashboard" class="section active">
-      <div id="kpiGrid" class="grid-kpi"></div>
-
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">المخطط المالي السريع</h2>
-            <button class="btn btn-mint" onclick="switchTab('variance')">+ إضافة بند</button>
-          </div>
-          <div class="chart-box"><canvas id="barChart"></canvas></div>
+  <div class="app-shell">
+    <!-- الرأس العلوي -->
+    <header class="top-header">
+      <div class="brand-box">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+            <circle cx="12" cy="14" r="2" fill="currentColor"/>
+          </svg>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">المشاريع الحديثة</h2>
-            <button class="btn btn-yellow" onclick="switchTab('lab')">VARIANCE LAB</button>
-          </div>
-          <div id="recentProjectsList"></div>
+        <div>
+          <h1 class="brand-title">ECARTIX</h1>
+          <p class="brand-subtitle">Smart Variance &amp; Ledger Studio</p>
         </div>
       </div>
+
+      <div class="header-controls">
+        <select id="currencySelect" class="pill-select" aria-label="العملة">
+          <option value="DZD" selected>د.ج DZD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="USD">$ USD</option>
+        </select>
+        <select id="langSelect" class="pill-select" aria-label="اللغة">
+          <option value="ar" selected>العربية</option>
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+        </select>
+        <button id="themeToggle" class="icon-btn" title="تبديل المظهر" aria-label="تبديل المظهر">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- شريط الفترة والموازنة -->
+    <section class="period-bar">
+      <div class="period-select-wrap">
+        <span class="period-label">الفترة / الموازنة:</span>
+        <select id="periodSelect" class="period-select">
+          <option value="nov-2026" selected>الموازنة التشغيلية — نوفمبر 2026</option>
+          <option value="oct-2026">الموازنة التشغيلية — أكتوبر 2026</option>
+          <option value="q4-2026">موازنة الربع الرابع — Q4 2026</option>
+        </select>
+      </div>
+      <button id="quickAddBtn" class="primary-mini-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>إدخال جديد</span>
+      </button>
     </section>
 
-    <!-- 2. Financial Variance Analysis -->
-    <section id="sec-variance" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">إضافة / تعديل بند تحليل الفروقات</h2>
-          <button id="cancelEditBtn" class="btn btn-outline" style="display:none;" onclick="cancelEdit()">إلغاء التعديل</button>
+    <!-- المحتوى الرئيسي المتغير حسب التبويب السفلي -->
+    <main class="main-content">
+      <!-- 1. لوحة القيادة -->
+      <section id="view-dashboard" class="tab-view active">
+        <div class="kpi-grid">
+          <div class="kpi-card card-lavender">
+            <div class="kpi-top">
+              <span class="kpi-title">إجمالي المخطط</span>
+              <span class="kpi-badge">Plan</span>
+            </div>
+            <div class="kpi-value" id="kpiPlanned">2,400,000.00 د.ج</div>
+            <div class="kpi-meta">الأساس المرجعي المعتمد</div>
+          </div>
+
+          <div class="kpi-card card-mint">
+            <div class="kpi-top">
+              <span class="kpi-title">إجمالي الفعلي</span>
+              <span class="kpi-badge">Actual</span>
+            </div>
+            <div class="kpi-value" id="kpiActual">2,700,000.00 د.ج</div>
+            <div class="kpi-meta">مجموع العمليات المسجلة</div>
+          </div>
+
+          <div class="kpi-card card-amber">
+            <div class="kpi-top">
+              <span class="kpi-title">إجمالي الفارق</span>
+              <span class="kpi-badge">Δ Variance</span>
+            </div>
+            <div class="kpi-value" id="kpiVariance">+300,000.00 د.ج</div>
+            <div class="kpi-meta" id="kpiVarianceStatus">انحراف إيجابي / تجاوز مخطط</div>
+          </div>
+
+          <div class="kpi-card card-peach">
+            <div class="kpi-top">
+              <span class="kpi-title">نسبة الأداء</span>
+              <span class="kpi-badge">Index</span>
+            </div>
+            <div class="kpi-value" id="kpiPerformance">112.5%</div>
+            <div class="kpi-meta">مؤشر التحقق الفعلي مقابل المخطط</div>
+          </div>
         </div>
 
-        <form id="varianceForm" onsubmit="saveVarianceItem(event)">
-          <div class="grid-3">
-            <div class="form-group">
-              <label>اسم البند</label>
-              <input id="itemName" type="text" required placeholder="مثال: مبيعات نوفمبر" />
+        <!-- بطاقة تحليل سريع ومؤشر تقدم -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">مؤشر الفارق والانحراف</h2>
+              <p class="panel-desc">نظرة فورية على توزيع الأداء والعمليات الأخيرة</p>
             </div>
-            <div class="form-group">
-              <label>نوع التحليل / الفئة</label>
-              <select id="itemCategory"></select>
-            </div>
-            <div class="form-group">
-              <label>التاريخ</label>
-              <input id="itemDate" type="date" value="2026-11-21" />
-            </div>
-            <div class="form-group">
-              <label>القيمة المخططة (Planned)</label>
-              <input id="itemPlanned" type="number" step="any" required />
-            </div>
-            <div class="form-group">
-              <label>القيمة الفعلية (Actual)</label>
-              <input id="itemActual" type="number" step="any" required />
-            </div>
-            <div class="form-group">
-              <label>السعر المعياري / الفعلي (اختياري)</label>
-              <div style="display:flex;gap:6px;">
-                <input id="itemStdPrice" type="number" step="any" placeholder="Std P" />
-                <input id="itemActPrice" type="number" step="any" placeholder="Act P" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>الكمية المعيارية / الفعلية (اختياري)</label>
-              <div style="display:flex;gap:6px;">
-                <input id="itemStdQty" type="number" step="any" placeholder="Std Q" />
-                <input id="itemActQty" type="number" step="any" placeholder="Act Q" />
-              </div>
+            <span class="chip-pill" id="recordCountChip">0 سجل محفوظ</span>
+          </div>
+
+          <div class="progress-track">
+            <div class="progress-fill" id="performanceBar" style="width: 78%;"></div>
+          </div>
+          <div class="progress-labels">
+            <span>0%</span>
+            <span id="progressCaption">نسبة التحقق الحالية: 112.5%</span>
+            <span>150%</span>
+          </div>
+        </div>
+
+        <!-- أحدث العمليات في السجل -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">آخر العمليات المحفوظة في السجل</h2>
+            <button class="link-btn" data-jump="ledger">عرض الكل</button>
+          </div>
+          <div id="recentLedgerList" class="ledger-list compact"></div>
+        </div>
+      </section>
+
+      <!-- 2. تحليل الفروقات والإدخال -->
+      <section id="view-variance" class="tab-view">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">إضافة عملية / بند موازنة</h2>
+              <p class="panel-desc">سيتم حفظ كل إدخال مباشرة في سجل البيانات وحساب الفارق تلقائياً</p>
             </div>
           </div>
-          <button class="btn btn-primary" type="submit">حفظ وحساب الفارق تلقائياً</button>
-        </form>
-      </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">سجل الفروقات المحسوبة</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input id="searchInput" type="search" placeholder="بحث..." oninput="renderVarianceTable()" style="width:160px;" />
-            <select id="filterCategory" onchange="renderVarianceTable()" style="width:auto;"></select>
-            <select id="filterStatus" onchange="renderVarianceTable()" style="width:auto;">
+          <form id="varianceForm" class="smart-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="itemTitle">اسم البند أو العملية</label>
+                <input type="text" id="itemTitle" placeholder="مثال: تكاليف الإنتاج أو المبيعات" required />
+              </div>
+              <div class="form-group">
+                <label for="itemCategory">التصنيف</label>
+                <select id="itemCategory">
+                  <option value="الإنتاج والتشغيل">الإنتاج والتشغيل</option>
+                  <option value="المبيعات والإيرادات">المبيعات والإيرادات</option>
+                  <option value="الأجور والرواتب">الأجور والرواتب</option>
+                  <option value="المصاريف الإدارية">المصاريف الإدارية</option>
+                  <option value="مواد أولية">مواد أولية</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="plannedAmount">المبلغ المخطط</label>
+                <input type="number" id="plannedAmount" step="0.01" placeholder="2400000" required />
+              </div>
+              <div class="form-group">
+                <label for="actualAmount">المبلغ الفعلي</label>
+                <input type="number" id="actualAmount" step="0.01" placeholder="2700000" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="itemNote">ملاحظة أو سبب الفارق (اختياري)</label>
+              <input type="text" id="itemNote" placeholder="مثال: ارتفاع طفيف في الكمية أو الأسعار" />
+            </div>
+
+            <div class="live-preview-box" id="liveVariancePreview">
+              <span>الفارق الفوري المحسوب:</span>
+              <strong id="previewDiffValue">0.00 د.ج (0.0%)</strong>
+            </div>
+
+            <button type="submit" class="primary-btn full-width">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span>حفظ في السجل وتحديث التحليل</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">تفصيل الفروقات حسب البنود</h2>
+          </div>
+          <div id="varianceBreakdownList" class="breakdown-list"></div>
+        </div>
+      </section>
+
+      <!-- 3. سجل حفظ البيانات (Ledger) -->
+      <section id="view-ledger" class="tab-view">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">سجل حفظ البيانات والعمليات</h2>
+              <p class="panel-desc">جميع البيانات المدخلة محفوظة ومرتبة مع إمكانية البحث والحذف أو التصدير</p>
+            </div>
+            <button id="clearLedgerBtn" class="danger-chip-btn">تفريغ السجل</button>
+          </div>
+
+          <div class="search-row">
+            <input type="text" id="ledgerSearch" class="search-input" placeholder="ابحث باسم البند أو التصنيف أو الملاحظة..." />
+            <select id="ledgerFilter" class="pill-select">
               <option value="all">الكل</option>
-              <option value="fav">ملائم (Favorable)</option>
-              <option value="unfav">غير ملائم (Unfavorable)</option>
-              <option value="neutral">متعادل</option>
+              <option value="favorable">فارق إيجابي (+)</option>
+              <option value="unfavorable">فارق سلبي (-)</option>
             </select>
           </div>
-        </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>البند</th>
-                <th>الفئة</th>
-                <th>المخطط</th>
-                <th>الفعلي</th>
-                <th>الفارق المطلق</th>
-                <th>النسبة / الإنجاز</th>
-                <th>الحالة</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="varianceTableBody"></tbody>
-          </table>
+          <div id="fullLedgerList" class="ledger-list"></div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 3. ECARTIX VARIANCE LAB -->
-    <section id="sec-lab" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">ECARTIX VARIANCE LAB — مختبر المحاكاة التفاعلي</h2>
-        </div>
-        <div class="grid-3">
-          <div class="form-group">
-            <label>محاكاة تغير المصروفات (%)</label>
-            <input id="labExpensePct" type="number" step="1" value="-10" oninput="runSimulation()" />
-          </div>
-          <div class="form-group">
-            <label>محاكاة تغير أسعار البيع (%)</label>
-            <input id="labPricePct" type="number" step="1" value="5" oninput="runSimulation()" />
-          </div>
-          <div class="form-group">
-            <label>محاكاة تغير حجم الإنتاج (%)</label>
-            <input id="labProdPct" type="number" step="1" value="8" oninput="runSimulation()" />
-          </div>
-        </div>
-        <div id="labResultBox" style="margin-top:14px;"></div>
-      </div>
-    </section>
-
-    <!-- 4. Formula Library -->
-    <section id="sec-formulas" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">المؤشرات الإحصائية المباشرة للمشروع الحالي</h2>
-        </div>
-        <div id="liveStatsBox"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">مكتبة القوانين المالية والإحصائية</h2>
-        </div>
-        <div id="formulasList"></div>
-      </div>
-    </section>
-
-    <!-- 5. Calendar & Time Analysis -->
-    <section id="sec-calendar" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">التقويم والتحليل الزمني (2020 – 2035)</h2>
-        </div>
-        <div class="grid-3">
-          <div class="form-group">
-            <label>السنة</label>
-            <select id="calYear" onchange="runCalendarAnalysis()">
-              <option value="all">كل السنوات</option>
-              <option value="2020">2020</option>
-              <option value="2021">2021</option>
-              <option value="2022">2022</option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026" selected>2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-              <option value="2029">2029</option>
-              <option value="2030">2030</option>
-              <option value="2031">2031</option>
-              <option value="2032">2032</option>
-              <option value="2033">2033</option>
-              <option value="2034">2034</option>
-              <option value="2035">2035</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>الشهر</label>
-            <select id="calMonth" onchange="runCalendarAnalysis()">
-              <option value="all">كل الأشهر</option>
-              <option value="01">01 - يناير</option>
-              <option value="02">02 - فبراير</option>
-              <option value="03">03 - مارس</option>
-              <option value="04">04 - أفريل</option>
-              <option value="05">05 - ماي</option>
-              <option value="06">06 - جوان</option>
-              <option value="07">07 - جويلية</option>
-              <option value="08">08 - أوت</option>
-              <option value="09">09 - سبتمبر</option>
-              <option value="10">10 - أكتوبر</option>
-              <option value="11">11 - نوفمبر</option>
-              <option value="12">12 - ديسمبر</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>الفصل المالي (Quarter)</label>
-            <select id="calQuarter" onchange="runCalendarAnalysis()">
-              <option value="all">كل الفصول</option>
-              <option value="1">Q1 (يناير - مارس)</option>
-              <option value="2">Q2 (أفريل - جوان)</option>
-              <option value="3">Q3 (جويلية - سبتمبر)</option>
-              <option value="4">Q4 (أكتوبر - ديسمبر)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>من تاريخ</label>
-            <input id="calFrom" type="date" onchange="runCalendarAnalysis()" />
-          </div>
-          <div class="form-group">
-            <label>إلى تاريخ</label>
-            <input id="calTo" type="date" onchange="runCalendarAnalysis()" />
-          </div>
-        </div>
-        <div id="calResultBox" style="margin-top:12px;"></div>
-      </div>
-    </section>
-
-    <!-- 6. Multi-Currency -->
-    <section id="sec-currencies" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">نظام العملات المتعددة (العملة الافتراضية: DZD)</h2>
-          <button class="btn btn-mint" onclick="fetchLiveRates()">تحديث الأسعار الحية (API)</button>
-        </div>
-        <div id="currencyRatesGrid" class="grid-3"></div>
-      </div>
-    </section>
-
-    <!-- 7. Statistics & Charts -->
-    <section id="sec-statistics" class="section">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header"><h2 class="card-title">اتجاه الفروقات (Line Chart)</h2></div>
-          <div class="chart-box"><canvas id="lineChart"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h2 class="card-title">توزيع الفروقات الملائمة وغير الملائمة (Pie Chart)</h2></div>
-          <div class="chart-box"><canvas id="pieChart"></canvas></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 8. Reports -->
-    <section id="sec-reports" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">التقارير والتصدير (PDF / Excel XLSX / CSV)</h2>
-          <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
-            <button class="btn btn-mint" onclick="exportExcelXML()">📊 تصدير Excel (.xls)</button>
-            <button class="btn btn-yellow" onclick="exportCSV()">📄 تصدير CSV</button>
-          </div>
-        </div>
-        <p style="color:var(--text-muted);font-size:13px;">
-          يمكنكِ توليد تقرير مفصل للمشروع الحالي أو طباعته بصيغة PDF مباشرة عبر زر الطباعة، أو تصديره إلى Excel و CSV.
-        </p>
-      </div>
-    </section>
-
-    <!-- 9. Data Management -->
-    <section id="sec-data" class="section">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">إدارة المشاريع والبيانات</h2>
-          <button class="btn btn-danger" onclick="clearSampleData()">حذف البيانات التجريبية</button>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>إنشاء مشروع تحليل جديد</label>
-            <div style="display:flex;gap:8px;">
-              <input id="newProjectName" type="text" placeholder="اسم المشروع الجديد..." />
-              <button class="btn btn-primary" onclick="createProject()">إنشاء</button>
+      <!-- 4. مختبر المحاكاة (Simulation Lab) -->
+      <section id="view-lab" class="tab-view">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">مختبر المحاكاة (Simulation Lab)</h2>
+              <p class="panel-desc">جرّب سيناريوهات تغير الأسعار أو الكميات وشاهد أثرها الفوري على الفارق</p>
             </div>
           </div>
-          <div class="form-group">
-            <label>حذف المشروع الحالي</label>
-            <div style="display:flex;gap:8px;">
-              <select id="dataProjectSelect" onchange="switchProject(this.value)"></select>
-              <button class="btn btn-danger" onclick="deleteActiveProject()">حذف</button>
+
+          <div class="sim-controls">
+            <div class="sim-item">
+              <div class="sim-head">
+                <label for="simVolumeSlider">تغير الكمية / النشاط (%)</label>
+                <span id="simVolumeVal">+10%</span>
+              </div>
+              <input type="range" id="simVolumeSlider" min="-40" max="50" value="10" />
+            </div>
+
+            <div class="sim-item">
+              <div class="sim-head">
+                <label for="simPriceSlider">تغير السعر / التكلفة (%)</label>
+                <span id="simPriceVal">+5%</span>
+              </div>
+              <input type="range" id="simPriceSlider" min="-40" max="50" value="5" />
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">النسخ الاحتياطي، الاستعادة، وحماية كلمة المرور</h2>
-        </div>
-        <div class="grid-2">
-          <div>
-            <button class="btn btn-mint" onclick="backupJSON()">⬇️ تحميل نسخة احتياطية (JSON)</button>
-            <label class="btn btn-outline" style="margin-inline-start:8px;cursor:pointer;">
-              ⬆️ استعادة نسخة احتياطية
-              <input type="file" accept=".json" style="display:none;" onchange="restoreJSON(event)" />
-            </label>
+          <div class="sim-result-card">
+            <div class="sim-metric">
+              <span>الفعلي المتوقع بعد المحاكاة</span>
+              <strong id="simProjectedActual">0.00 د.ج</strong>
+            </div>
+            <div class="sim-metric">
+              <span>الفارق المتوقع (Δ)</span>
+              <strong id="simProjectedVariance">0.00 د.ج</strong>
+            </div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <input id="lockPassInput" type="password" placeholder="كلمة مرور التطبيق (اختياري)" />
-            <button class="btn btn-primary" onclick="setPasswordLock()">حفظ القفل</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
 
-  <script src="./app.js"></script>
+          <button id="saveScenarioBtn" class="secondary-btn full-width">
+            حفظ نتيجة المحاكاة كسجل جديد
+          </button>
+        </div>
+      </section>
+
+      <!-- 5. المساعد الذكي (AI Assistant) -->
+      <section id="view-ai" class="tab-view">
+        <div class="panel-card ai-card">
+          <div class="panel-header">
+            <div class="ai-title-row">
+              <span class="ai-orb">✦</span>
+              <div>
+                <h2 class="panel-title">المساعد الذكي لـ ECARTIX</h2>
+                <p class="panel-desc">يقرأ أرقامك وسجلاتك ويقدم تحليلاً فورياً وتفسيراً للفروقات</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-prompts">
+            <button class="prompt-chip" data-prompt="لخص وضع الموازنة والفارق الحالي">ملخص الموازنة</button>
+            <button class="prompt-chip" data-prompt="ما سبب الفارق وكيف أتعامل معه؟">تفسير الفارق</button>
+            <button class="prompt-chip" data-prompt="اعرض إحصاء السجلات المحفوظة">إحصاء السجل</button>
+          </div>
+
+          <div id="aiChatBox" class="ai-chat-box"></div>
+
+          <form id="aiChatForm" class="ai-input-row">
+            <input type="text" id="aiPromptInput" placeholder="اسأل المساعد الذكي عن الفروقات أو السجل أو الأداء..." required />
+            <button type="submit" class="send-btn" aria-label="إرسال">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- شريط التنقل السفلي الثابت بأيقونات واضحة -->
+    <nav class="bottom-nav" aria-label="التنقل الرئيسي">
+      <button class="nav-item active" data-target="dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9" rx="2"/>
+          <rect x="14" y="3" width="7" height="5" rx="2"/>
+          <rect x="14" y="12" width="7" height="9" rx="2"/>
+          <rect x="3" y="16" width="7" height="5" rx="2"/>
+        </svg>
+        <span>الرئيسية</span>
+      </button>
+
+      <button class="nav-item" data-target="variance">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18"/>
+          <path d="M18 9l-5 5-2-2-4 4"/>
+        </svg>
+        <span>الفروقات</span>
+      </button>
+
+      <button class="nav-item" data-target="ledger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="13" y2="17"/>
+        </svg>
+        <span>السجل</span>
+      </button>
+
+      <button class="nav-item" data-target="lab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 3h6"/>
+          <path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/>
+        </svg>
+        <span>المحاكاة</span>
+      </button>
+
+      <button class="nav-item" data-target="ai">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/>
+          <path d="M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z"/>
+        </svg>
+        <span>المساعد</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
 </body>
-  </html>
-  
+</html>
