@@ -60,7 +60,6 @@ body {
   padding: 14px 14px 20px;
 }
 
-/* الرأس العلوي */
 .top-header {
   display: flex;
   align-items: center;
@@ -137,7 +136,6 @@ body {
   cursor: pointer;
 }
 
-/* شريط الفترة */
 .period-bar {
   display: flex;
   align-items: center;
@@ -193,7 +191,6 @@ body {
   white-space: nowrap;
 }
 
-/* التبويبات */
 .tab-view {
   display: none;
   animation: fadeUp 0.22s ease;
@@ -214,7 +211,6 @@ body {
   }
 }
 
-/* بطاقات المؤشرات */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -272,7 +268,6 @@ body {
   font-weight: 600;
 }
 
-/* البطاقات العامة */
 .panel-card {
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
@@ -321,7 +316,6 @@ body {
   cursor: pointer;
 }
 
-/* شريط التقدم */
 .progress-track {
   width: 100%;
   height: 12px;
@@ -346,7 +340,6 @@ body {
   font-weight: 700;
 }
 
-/* النماذج والإدخال */
 .smart-form {
   display: flex;
   flex-direction: column;
@@ -433,7 +426,6 @@ body {
   width: 100%;
 }
 
-/* السجل والبنود */
 .search-row {
   display: flex;
   gap: 8px;
@@ -509,7 +501,6 @@ body {
   cursor: pointer;
 }
 
-/* المحاكاة */
 .sim-controls {
   display: flex;
   flex-direction: column;
@@ -555,7 +546,6 @@ body {
   font-weight: 800;
 }
 
-/* المساعد الذكي */
 .ai-title-row {
   display: flex;
   align-items: center;
@@ -643,7 +633,6 @@ body {
   flex-shrink: 0;
 }
 
-/* شريط التنقل السفلي الثابت */
 .bottom-nav {
   position: fixed;
   bottom: 0;
