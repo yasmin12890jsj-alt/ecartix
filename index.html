@@ -1,351 +1,320 @@
+
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ECARTIX — منصة تحليل الفروقات الذكية</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#7655E8" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+
+  <title>ECARTIX | Smart Financial Studio</title>
+
+  <meta name="description" content="ECARTIX - Professional Budget Management and Financial Variance Analysis Platform">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon_512.png">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-  <div class="app-shell">
-    <header class="top-header">
-      <div class="brand-box">
-        <div class="brand-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-            <circle cx="12" cy="14" r="2" fill="currentColor"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="brand-title">ECARTIX</h1>
-          <p class="brand-subtitle">Smart Variance &amp; Ledger Studio</p>
-        </div>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">E</span>
+      <div>
+        <h2>ECARTIX</h2>
+        <small>Financial Studio</small>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#dashboard" class="active">▦ Dashboard</a>
+      <a href="#ledger">▤ Financial Ledger</a>
+      <a href="#budget">◫ Budget Management</a>
+      <a href="#variance">◈ Variance Analysis</a>
+      <a href="#simulation">⌁ Simulation Lab</a>
+      <a href="#reports">▧ Reports</a>
+      <a href="#settings">⚙ Settings</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="status-dot"></span>
+      System Online
+      <small>ECARTIX Version 2.0</small>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <header class="topbar">
+      <div>
+        <h1>Financial Dashboard</h1>
+        <p>Welcome to your financial control center.</p>
       </div>
 
-      <div class="header-controls">
-        <select id="currencySelect" class="pill-select" aria-label="العملة">
-          <option value="DZD" selected>د.ج DZD</option>
-          <option value="EUR">€ EUR</option>
-          <option value="USD">$ USD</option>
-        </select>
-        <select id="langSelect" class="pill-select" aria-label="اللغة">
-          <option value="ar" selected>العربية</option>
-          <option value="fr">Français</option>
+      <div class="top-actions">
+        <select id="languageSelect" aria-label="Language">
           <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
         </select>
-        <button id="themeToggle" class="icon-btn" title="تبديل المظهر" aria-label="تبديل المظهر">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-          </svg>
-        </button>
+
+        <button id="themeToggle" class="icon-button" aria-label="Toggle theme">☾</button>
       </div>
     </header>
 
-    <section class="period-bar">
-      <div class="period-select-wrap">
-        <span class="period-label">الفترة / الموازنة:</span>
-        <select id="periodSelect" class="period-select">
-          <option value="nov-2026" selected>الموازنة التشغيلية — نوفمبر 2026</option>
-          <option value="oct-2026">الموازنة التشغيلية — أكتوبر 2026</option>
-          <option value="q4-2026">موازنة الربع الرابع — Q4 2026</option>
-        </select>
+    <section id="dashboard" class="dashboard-section">
+
+      <div class="section-heading">
+        <div>
+          <h2>Overview</h2>
+          <p>Your financial performance at a glance.</p>
+        </div>
+
+        <button class="primary-button" onclick="showSection('ledger')">
+          + Add Transaction
+        </button>
       </div>
-      <button id="quickAddBtn" class="primary-mini-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span>إدخال جديد</span>
-      </button>
-    </section>
 
-    <main class="main-content">
-      <section id="view-dashboard" class="tab-view active">
-        <div class="kpi-grid">
-          <div class="kpi-card card-lavender">
-            <div class="kpi-top">
-              <span class="kpi-title">إجمالي المخطط</span>
-              <span class="kpi-badge">Plan</span>
-            </div>
-            <div class="kpi-value" id="kpiPlanned">2,400,000.00 د.ج</div>
-            <div class="kpi-meta">الأساس المرجعي المعتمد</div>
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <span>Total Budget</span>
+          <h2 id="totalPlan">0.00</h2>
+          <small>Planned amount</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Actual Expenses</span>
+          <h2 id="totalActual">0.00</h2>
+          <small>Recorded amount</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Total Variance</span>
+          <h2 id="totalVariance">0.00</h2>
+          <small>Budget difference</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Performance Index</span>
+          <h2 id="performanceIndex">0%</h2>
+          <small>Budget utilization</small>
+        </article>
+
+      </div>
+
+      <div class="charts-grid">
+
+        <article class="panel">
+          <h3>Budget vs Actual</h3>
+          <canvas id="budgetChart"></canvas>
+        </article>
+
+        <article class="panel">
+          <h3>Financial Overview</h3>
+          <canvas id="overviewChart"></canvas>
+        </article>
+
+      </div>
+
+      <article class="panel">
+        <div class="section-heading">
+          <div>
+            <h3>Recent Transactions</h3>
+            <p>Latest financial records</p>
           </div>
-
-          <div class="kpi-card card-mint">
-            <div class="kpi-top">
-              <span class="kpi-title">إجمالي الفعلي</span>
-              <span class="kpi-badge">Actual</span>
-            </div>
-            <div class="kpi-value" id="kpiActual">2,700,000.00 د.ج</div>
-            <div class="kpi-meta">مجموع العمليات المسجلة</div>
-          </div>
-
-          <div class="kpi-card card-amber">
-            <div class="kpi-top">
-              <span class="kpi-title">إجمالي الفارق</span>
-              <span class="kpi-badge">Δ Variance</span>
-            </div>
-            <div class="kpi-value" id="kpiVariance">+300,000.00 د.ج</div>
-            <div class="kpi-meta" id="kpiVarianceStatus">انحراف إيجابي / تجاوز مخطط</div>
-          </div>
-
-          <div class="kpi-card card-peach">
-            <div class="kpi-top">
-              <span class="kpi-title">نسبة الأداء</span>
-              <span class="kpi-badge">Index</span>
-            </div>
-            <div class="kpi-value" id="kpiPerformance">112.5%</div>
-            <div class="kpi-meta">مؤشر التحقق الفعلي مقابل المخطط</div>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">مؤشر الفارق والانحراف</h2>
-              <p class="panel-desc">نظرة فورية على توزيع الأداء والعمليات الأخيرة</p>
-            </div>
-            <span class="chip-pill" id="recordCountChip">0 سجل محفوظ</span>
-          </div>
-
-          <div class="progress-track">
-            <div class="progress-fill" id="performanceBar" style="width: 78%;"></div>
-          </div>
-          <div class="progress-labels">
-            <span>0%</span>
-            <span id="progressCaption">نسبة التحقق الحالية: 112.5%</span>
-            <span>150%</span>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">آخر العمليات المحفوظة في السجل</h2>
-            <button class="link-btn" data-jump="ledger">عرض الكل</button>
-          </div>
-          <div id="recentLedgerList" class="ledger-list compact"></div>
-        </div>
-      </section>
-
-      <section id="view-variance" class="tab-view">
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">إضافة عملية / بند موازنة</h2>
-              <p class="panel-desc">سيتم حفظ كل إدخال مباشرة في سجل البيانات وحساب الفارق تلقائياً</p>
-            </div>
-          </div>
-
-          <form id="varianceForm" class="smart-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="itemTitle">اسم البند أو العملية</label>
-                <input type="text" id="itemTitle" placeholder="مثال: تكاليف الإنتاج أو المبيعات" required />
-              </div>
-              <div class="form-group">
-                <label for="itemCategory">التصنيف</label>
-                <select id="itemCategory">
-                  <option value="الإنتاج والتشغيل">الإنتاج والتشغيل</option>
-                  <option value="المبيعات والإيرادات">المبيعات والإيرادات</option>
-                  <option value="الأجور والرواتب">الأجور والرواتب</option>
-                  <option value="المصاريف الإدارية">المصاريف الإدارية</option>
-                  <option value="مواد أولية">مواد أولية</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="plannedAmount">المبلغ المخطط</label>
-                <input type="number" id="plannedAmount" step="0.01" placeholder="2400000" required />
-              </div>
-              <div class="form-group">
-                <label for="actualAmount">المبلغ الفعلي</label>
-                <input type="number" id="actualAmount" step="0.01" placeholder="2700000" required />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="itemNote">ملاحظة أو سبب الفارق (اختياري)</label>
-              <input type="text" id="itemNote" placeholder="مثال: ارتفاع طفيف في الكمية أو الأسعار" />
-            </div>
-
-            <div class="live-preview-box" id="liveVariancePreview">
-              <span>الفارق الفوري المحسوب:</span>
-              <strong id="previewDiffValue">0.00 د.ج (0.0%)</strong>
-            </div>
-
-            <button type="submit" class="primary-btn full-width">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
-              </svg>
-              <span>حفظ في السجل وتحديث التحليل</span>
-            </button>
-          </form>
-        </div>
-
-        <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">تفصيل الفروقات حسب البنود</h2>
-          </div>
-          <div id="varianceBreakdownList" class="breakdown-list"></div>
-        </div>
-      </section>
-
-      <section id="view-ledger" class="tab-view">
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">سجل حفظ البيانات والعمليات</h2>
-              <p class="panel-desc">جميع البيانات المدخلة محفوظة ومرتبة مع إمكانية البحث والحذف</p>
-            </div>
-            <button id="clearLedgerBtn" class="danger-chip-btn">تفريغ السجل</button>
-          </div>
-
-          <div class="search-row">
-            <input type="text" id="ledgerSearch" class="search-input" placeholder="ابحث باسم البند أو التصنيف أو الملاحظة..." />
-            <select id="ledgerFilter" class="pill-select">
-              <option value="all">الكل</option>
-              <option value="favorable">فارق إيجابي (+)</option>
-              <option value="unfavorable">فارق سلبي (-)</option>
-            </select>
-          </div>
-
-          <div id="fullLedgerList" class="ledger-list"></div>
-        </div>
-      </section>
-
-      <section id="view-lab" class="tab-view">
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h2 class="panel-title">مختبر المحاكاة (Simulation Lab)</h2>
-              <p class="panel-desc">جرّب سيناريوهات تغير الأسعار أو الكميات وشاهد أثرها الفوري على الفارق</p>
-            </div>
-          </div>
-
-          <div class="sim-controls">
-            <div class="sim-item">
-              <div class="sim-head">
-                <label for="simVolumeSlider">تغير الكمية / النشاط (%)</label>
-                <span id="simVolumeVal">+10%</span>
-              </div>
-              <input type="range" id="simVolumeSlider" min="-40" max="50" value="10" />
-            </div>
-
-            <div class="sim-item">
-              <div class="sim-head">
-                <label for="simPriceSlider">تغير السعر / التكلفة (%)</label>
-                <span id="simPriceVal">+5%</span>
-              </div>
-              <input type="range" id="simPriceSlider" min="-40" max="50" value="5" />
-            </div>
-          </div>
-
-          <div class="sim-result-card">
-            <div class="sim-metric">
-              <span>الفعلي المتوقع بعد المحاكاة</span>
-              <strong id="simProjectedActual">0.00 د.ج</strong>
-            </div>
-            <div class="sim-metric">
-              <span>الفارق المتوقع (Δ)</span>
-              <strong id="simProjectedVariance">0.00 د.ج</strong>
-            </div>
-          </div>
-
-          <button id="saveScenarioBtn" class="secondary-btn full-width">
-            حفظ نتيجة المحاكاة كسجل جديد
+          <button class="secondary-button" onclick="showSection('ledger')">
+            View All
           </button>
         </div>
-      </section>
 
-      <section id="view-ai" class="tab-view">
-        <div class="panel-card ai-card">
-          <div class="panel-header">
-            <div class="ai-title-row">
-              <span class="ai-orb">✦</span>
-              <div>
-                <h2 class="panel-title">المساعد الذكي لـ ECARTIX</h2>
-                <p class="panel-desc">يقرأ أرقامك وسجلاتك ويقدم تحليلاً فورياً وتفسيراً للفروقات</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="quick-prompts">
-            <button class="prompt-chip" data-prompt="لخص وضع الموازنة والفارق الحالي">ملخص الموازنة</button>
-            <button class="prompt-chip" data-prompt="ما سبب الفارق وكيف أتعامل معه؟">تفسير الفارق</button>
-            <button class="prompt-chip" data-prompt="اعرض إحصاء السجلات المحفوظة">إحصاء السجل</button>
-          </div>
-
-          <div id="aiChatBox" class="ai-chat-box"></div>
-
-          <form id="aiChatForm" class="ai-input-row">
-            <input type="text" id="aiPromptInput" placeholder="اسأل المساعد الذكي عن الفروقات أو السجل أو الأداء..." required />
-            <button type="submit" class="send-btn" aria-label="إرسال">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          </form>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentTransactions">
+              <tr>
+                <td colspan="5">No transactions yet.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </section>
-    </main>
+      </article>
 
-    <nav class="bottom-nav" aria-label="التنقل الرئيسي">
-      <button class="nav-item active" data-target="dashboard">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="9" rx="2"/>
-          <rect x="14" y="3" width="7" height="5" rx="2"/>
-          <rect x="14" y="12" width="7" height="9" rx="2"/>
-          <rect x="3" y="16" width="7" height="5" rx="2"/>
-        </svg>
-        <span>الرئيسية</span>
-      </button>
+    </section>
 
-      <button class="nav-item" data-target="variance">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 3v18h18"/>
-          <path d="M18 9l-5 5-2-2-4 4"/>
-        </svg>
-        <span>الفروقات</span>
-      </button>
+    <section id="ledger" class="dashboard-section hidden">
 
-      <button class="nav-item" data-target="ledger">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="8" y1="13" x2="16" y2="13"/>
-          <line x1="8" y1="17" x2="13" y2="17"/>
-        </svg>
-        <span>السجل</span>
-      </button>
+      <div class="section-heading">
+        <div>
+          <h2>Financial Ledger</h2>
+          <p>Manage your financial transactions.</p>
+        </div>
+      </div>
 
-      <button class="nav-item" data-target="lab">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 3h6"/>
-          <path d="M10 3v6.5L5.5 18a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3"/>
-        </svg>
-        <span>المحاكاة</span>
-      </button>
+      <article class="panel">
+        <h3>Add New Transaction</h3>
 
-      <button class="nav-item" data-target="ai">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/>
-          <path d="M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16z"/>
-        </svg>
-        <span>المساعد</span>
-      </button>
-    </nav>
-  </div>
+        <form id="transactionForm">
 
-  <script src="app.js"></script>
+          <div class="form-grid">
+
+            <div>
+              <label>Description</label>
+              <input id="description" type="text" required placeholder="Transaction description">
+            </div>
+
+            <div>
+              <label>Category</label>
+              <input id="category" type="text" required placeholder="e.g. Operations">
+            </div>
+
+            <div>
+              <label>Amount</label>
+              <input id="amount" type="number" min="0.01" step="0.01" required>
+            </div>
+
+            <div>
+              <label>Type</label>
+              <select id="type">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Date</label>
+              <input id="date" type="date" required>
+            </div>
+
+          </div>
+
+          <button class="primary-button" type="submit">
+            Save Transaction
+          </button>
+
+        </form>
+      </article>
+
+      <article class="panel">
+        <div class="section-heading">
+          <h3>Transaction History</h3>
+          <input id="searchInput" type="search" placeholder="Search transactions...">
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="transactionList">
+              <tr><td colspan="6">No transactions yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+    </section>
+
+    <section id="budget" class="dashboard-section hidden">
+      <h2>Budget Management</h2>
+
+      <article class="panel">
+        <h3>Set Your Budget</h3>
+
+        <form id="budgetForm">
+          <label>Budget Amount</label>
+          <input id="budgetAmount" type="number" min="0" step="0.01" required>
+
+          <label>Currency</label>
+          <select id="currency">
+            <option value="DZD">DZD</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+          </select>
+
+          <button class="primary-button" type="submit">Save Budget</button>
+        </form>
+      </article>
+    </section>
+
+    <section id="variance" class="dashboard-section hidden">
+      <h2>Variance Analysis</h2>
+      <article class="panel">
+        <h3>Financial Performance</h3>
+        <p>Budget and actual expense comparison.</p>
+        <div id="varianceDetails"></div>
+      </article>
+    </section>
+
+    <section id="simulation" class="dashboard-section hidden">
+      <h2>Simulation Lab</h2>
+
+      <article class="panel">
+        <h3>Scenario Simulation</h3>
+
+        <label>Expected Expense Change (%)</label>
+        <input id="simulationRate" type="number" value="10">
+
+        <button class="primary-button" onclick="runSimulation()">
+          Run Simulation
+        </button>
+
+        <h3 id="simulationResult">Simulation result will appear here.</h3>
+      </article>
+    </section>
+
+    <section id="reports" class="dashboard-section hidden">
+      <h2>Reports Center</h2>
+
+      <article class="panel">
+        <h3>Export Financial Data</h3>
+        <button class="primary-button" onclick="exportCSV()">
+          Export CSV
+        </button>
+        <button class="secondary-button" onclick="window.print()">
+          Print Report
+        </button>
+      </article>
+    </section>
+
+    <section id="settings" class="dashboard-section hidden">
+      <h2>Settings</h2>
+      <article class="panel">
+        <h3>Application Settings</h3>
+        <p>ECARTIX Financial Studio Version 2.0</p>
+        <p>Data storage: Browser Local Storage</p>
+      </article>
+    </section>
+
+    <footer>
+      <p>© 2026 ECARTIX. Smart Financial & Variance Studio.</p>
+    </footer>
+
+  </main>
+
+</div>
+
+<script src="app.js"></script>
+
 </body>
 </html>
