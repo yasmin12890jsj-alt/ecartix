@@ -33,7 +33,7 @@ function saveData() {
   try {
     localStorage.setItem(STORAGE.transactions, JSON.stringify(transactions));
     localStorage.setItem(STORAGE.budget, JSON.stringify(budget));
-    localStorage.setItem(STORAGE.currency, currency);
+    localStorage.setItem(STORAGE.currency, JSON.stringify(currency));
   } catch (error) {
     alert("Unable to save data. Your browser storage may be full.");
     console.error(error);
