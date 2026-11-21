@@ -1,22 +1,27 @@
+
 {
-  "name": "ECARTIX — Understand Every Difference",
+  "id": "./",
+  "name": "ECARTIX - Financial Intelligence",
   "short_name": "ECARTIX",
-  "description": "Financial, accounting, statistical and budget variance analysis platform.",
+  "description": "Smart Financial Management and Budget Variance Analysis Platform",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#F5F3FF",
-  "theme_color": "#7655E8",
-  "lang": "ar",
-  "dir": "rtl",
-  "categories": ["finance", "business", "productivity"],
+  "background_color": "#f4f6fa",
+  "theme_color": "#101827",
+  "lang": "en",
+  "categories": [
+    "finance",
+    "business",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icon_512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
